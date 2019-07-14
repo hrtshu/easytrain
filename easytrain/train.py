@@ -14,7 +14,7 @@ def tqdm_dummy(iterable, *args, **kwargs):
     yield from iterable
 
 
-def train_split(model, x, y, n_splits=None, patience=None,
+def train_split(model_generator, x, y, n_splits=None, patience=None,
                 max_epochs=None, tqdm=None):
     if not n_splits:
         n_splits = DEF_N_SPLITS
@@ -33,6 +33,8 @@ def train_split(model, x, y, n_splits=None, patience=None,
 
         best_model_path = mktemp()
         tb_log_dir = mkdtemp()
+
+        model = model_generator()
 
         early_stopping = EarlyStopping(patience=patience, verbose=1)
         checkpoint = ModelCheckpoint(best_model_path, save_best_only=True,

@@ -31,12 +31,13 @@ def start(iterable, name=None, out_dir=None, tqdm=None):
     path = join(out_dir, name)
     os.mkdir(path)
 
-    for train_name, data, target, model, train_params in tqdm(iterable):
+    for train_name, data, target, model_generator, train_params \
+            in tqdm(iterable):
         train_path = join(path, train_name)
         os.mkdir(train_path)
 
         for i, (model, fit_history, tb_log_dir) \
-                in enumerate(train_split(model, data, target,
+                in enumerate(train_split(model_generator, data, target,
                                          **train_params, tqdm=tqdm)):
             split_path = join(train_path, 'split{:03d}'.format(i))
             model.save(split_path + '.h5', overwrite=False)
