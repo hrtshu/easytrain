@@ -1,8 +1,8 @@
 
-from tempfile import mktemp
+from tempfile import mktemp, mkdtemp
 
 from sklearn.model_selection import KFold
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 
 
 DEF_N_SPLITS = 10
@@ -32,16 +32,18 @@ def train_split(model, x, y, n_splits=None, patience=None,
         test_x, test_y = x[test_idx], y[test_idx]
 
         best_model_path = mktemp()
+        tb_log_dir = mkdtemp()
 
         early_stopping = EarlyStopping(patience=patience, verbose=1)
         checkpoint = ModelCheckpoint(best_model_path, save_best_only=True,
                                      save_weights_only=True, verbose=1)
+        tensorboard = TensorBoard(log_dir=tb_log_dir, histogram_freq=1)
 
         res = model.fit(train_x, train_y, shuffle=True, epochs=max_epochs,
-                        callbacks=[early_stopping, checkpoint],
+                        callbacks=[early_stopping, checkpoint, tensorboard],
                         validation_data=(test_x, test_y))
         history = res.history
 
         model.load_weights(best_model_path)
 
-        yield model, history
+        yield model, history, tb_log_dir

@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 import os
 from os.path import join
+from shutil import move
 
 import numpy as np
 
@@ -34,10 +35,11 @@ def start(iterable, name=None, out_dir=None, tqdm=None):
         train_path = join(path, train_name)
         os.mkdir(train_path)
 
-        for i, (model, fit_history) \
+        for i, (model, fit_history, tb_log_dir) \
                 in enumerate(train_split(model, data, target,
                                          **train_params, tqdm=tqdm)):
             split_path = join(train_path, 'split{:03d}'.format(i))
             model.save(split_path + '.h5', overwrite=False)
+            move(tb_log_dir, split_path + '_tblog')
             with open(split_path + '.json', 'x') as f:
                 json.dump(fit_history, f, cls=MyEncoder, indent=4)
