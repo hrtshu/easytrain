@@ -6,6 +6,7 @@ from os.path import join
 from shutil import move
 
 import numpy as np
+from keras import backend as K
 
 from .train import train_split
 
@@ -44,3 +45,5 @@ def start(iterable, name=None, out_dir=None, tqdm=None):
             move(tb_log_dir, split_path + '_tblog')
             with open(split_path + '.json', 'x') as f:
                 json.dump(fit_history, f, cls=MyEncoder, indent=4)
+            del model
+            K.clear_session()
