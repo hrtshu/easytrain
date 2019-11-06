@@ -14,6 +14,32 @@ def tqdm_dummy(iterable, *args, **kwargs):
     yield from iterable
 
 
+def fit(model, train_data, test_data, *, patience, max_epochs,
+        use_weights='best', tb_log_dir=None, callbacks=[]):
+    if use_weights not in ('best', 'last'):
+        raise ValueError("use_weights must be 'best' or 'last'")
+
+    # TODO 事前にcallbacksに既にEarlyStoppingなどが含まれている場合に警告を出す
+    callbacks = list(callbacks)
+    callbacks.append(EarlyStopping(patience=patience, verbose=1))
+    if use_weights == 'best':
+        best_model_path = mktemp()
+        callbacks.append(ModelCheckpoint(best_model_path, save_best_only=True,
+                                         save_weights_only=True, verbose=1))
+    if tb_log_dir is not None:
+        callbacks.append(TensorBoard(log_dir=tb_log_dir, histogram_freq=1))
+
+    res = model.fit(*train_data, shuffle=True, epochs=max_epochs,
+                    callbacks=callbacks,
+                    validation_data=test_data)
+    history = res.history
+
+    if use_weights == 'best':
+        model.load_weights(best_model_path)
+
+    return history
+
+
 def train_split(model_generator, x, y, n_splits=None, patience=None,
                 max_epochs=None, tqdm=None):
     if not n_splits:
@@ -31,21 +57,12 @@ def train_split(model_generator, x, y, n_splits=None, patience=None,
         train_x, train_y = x[train_idx], y[train_idx]
         test_x, test_y = x[test_idx], y[test_idx]
 
-        best_model_path = mktemp()
-        tb_log_dir = mkdtemp()
-
         model = model_generator()
 
-        early_stopping = EarlyStopping(patience=patience, verbose=1)
-        checkpoint = ModelCheckpoint(best_model_path, save_best_only=True,
-                                     save_weights_only=True, verbose=1)
-        tensorboard = TensorBoard(log_dir=tb_log_dir, histogram_freq=1)
+        tb_log_dir = mkdtemp()
 
-        res = model.fit(train_x, train_y, shuffle=True, epochs=max_epochs,
-                        callbacks=[early_stopping, checkpoint, tensorboard],
-                        validation_data=(test_x, test_y))
-        history = res.history
-
-        model.load_weights(best_model_path)
+        history = fit(model, (train_x, train_y), (test_x, test_y),
+                      patience=patience, max_epochs=max_epochs,
+                      use_weights='best', tb_log_dir=tb_log_dir)
 
         yield model, history, tb_log_dir
