@@ -15,23 +15,25 @@ def tqdm_dummy(iterable, *args, **kwargs):
 
 
 def fit(model, train_data, test_data, *, patience, max_epochs,
-        use_weights='best', tb_log_dir=None, callbacks=[]):
+        use_weights='best', tb_log_dir=None, callbacks=[], verbose=0):
     if use_weights not in ('best', 'last'):
         raise ValueError("use_weights must be 'best' or 'last'")
 
     # TODO 事前にcallbacksに既にEarlyStoppingなどが含まれている場合に警告を出す
     callbacks = list(callbacks)
-    callbacks.append(EarlyStopping(patience=patience, verbose=1))
+    callbacks.append(EarlyStopping(patience=patience,
+                                   verbose=int(bool(verbose))))
     if use_weights == 'best':
         best_model_path = mktemp()
         callbacks.append(ModelCheckpoint(best_model_path, save_best_only=True,
-                                         save_weights_only=True, verbose=1))
+                                         save_weights_only=True,
+                                         verbose=int(bool(verbose))))
     if tb_log_dir is not None:
         callbacks.append(TensorBoard(log_dir=tb_log_dir, histogram_freq=1))
 
     res = model.fit(*train_data, shuffle=True, epochs=max_epochs,
                     callbacks=callbacks,
-                    validation_data=test_data)
+                    validation_data=test_data, verbose=int(verbose))
     history = res.history
 
     if use_weights == 'best':
@@ -63,6 +65,6 @@ def train_split(model_generator, x, y, n_splits=None, patience=None,
 
         history = fit(model, (train_x, train_y), (test_x, test_y),
                       patience=patience, max_epochs=max_epochs,
-                      use_weights='best', tb_log_dir=tb_log_dir)
+                      use_weights='best', tb_log_dir=tb_log_dir, verbose=1)
 
         yield model, history, tb_log_dir
