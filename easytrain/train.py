@@ -15,7 +15,8 @@ def tqdm_dummy(iterable, *args, **kwargs):
 
 
 def fit(model, train_data, test_data, *, patience=None, max_epochs=1,
-        use_weights='best', tb_log_dir=None, callbacks=[], verbose=0):
+        use_weights='best', tb_log_dir=None, callbacks=[], shuffle=True,
+        verbose=0):
     if use_weights not in ('best', 'last'):
         raise ValueError("use_weights must be 'best' or 'last'")
 
@@ -32,7 +33,7 @@ def fit(model, train_data, test_data, *, patience=None, max_epochs=1,
     if tb_log_dir is not None:
         callbacks.append(TensorBoard(log_dir=tb_log_dir, histogram_freq=1))
 
-    res = model.fit(*train_data, shuffle=True, epochs=max_epochs,
+    res = model.fit(*train_data, shuffle=shuffle, epochs=max_epochs,
                     callbacks=callbacks,
                     validation_data=test_data, verbose=int(verbose))
     history = res.history
