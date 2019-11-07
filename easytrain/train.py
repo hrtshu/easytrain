@@ -5,11 +5,6 @@ from sklearn.model_selection import KFold
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 
 
-DEF_N_SPLITS = 10
-DEF_PATIENCE = 10
-DEF_MAX_EPOCHS = 1000
-
-
 def tqdm_dummy(iterable, *args, **kwargs):
     yield from iterable
 
@@ -44,14 +39,9 @@ def fit(model, train_data, test_data, *, patience=None, max_epochs=1,
     return history
 
 
-def train_split(model_generator, x, y, n_splits=None, patience=None,
-                max_epochs=None, tqdm=None):
-    if not n_splits:
-        n_splits = DEF_N_SPLITS
-    if patience is None:
-        patience = DEF_PATIENCE
-    if not max_epochs:
-        max_epochs = DEF_MAX_EPOCHS
+def train_split(model_generator, x, y, *,
+                fit_params={}, n_splits=None,
+                include_tb_log=False, tqdm=None, verbose=0):
     if not tqdm:
         tqdm = tqdm_dummy
 
@@ -63,10 +53,15 @@ def train_split(model_generator, x, y, n_splits=None, patience=None,
 
         model = model_generator()
 
-        tb_log_dir = mkdtemp()
+        tb_log_dir = mkdtemp() if include_tb_log else None
 
         history = fit(model, (train_x, train_y), (test_x, test_y),
-                      patience=patience, max_epochs=max_epochs,
-                      use_weights='best', tb_log_dir=tb_log_dir, verbose=1)
+                      **fit_params,
+                      tb_log_dir=tb_log_dir, verbose=verbose)
 
-        yield model, history, tb_log_dir
+        res = dict(model=model, history=history,
+                   train_idx=train_idx, test_idx=test_idx)
+        if include_tb_log:
+            res['tb_log_dir'] = tb_log_dir
+
+        yield res
