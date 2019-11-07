@@ -9,7 +9,7 @@ def tqdm_dummy(iterable, *args, **kwargs):
     yield from iterable
 
 
-def fit(model, train_data, test_data, *, patience=None, max_epochs=1,
+def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
         use_weights='best', tb_log_dir=None, callbacks=[], shuffle=True,
         verbose=0):
     if use_weights not in ('best', 'last'):
