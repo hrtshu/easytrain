@@ -31,8 +31,8 @@ def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
         callbacks.append(TensorBoard(log_dir=tb_log_dir, histogram_freq=1))
 
     res = model.fit(*train_data, shuffle=shuffle, epochs=max_epochs,
-                    callbacks=callbacks,
-                    validation_data=test_data, verbose=int(verbose))
+                    callbacks=callbacks, validation_data=test_data,
+                    verbose=int(verbose))
     history = res.history
 
     if use_weights == 'best':
