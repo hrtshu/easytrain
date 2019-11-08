@@ -40,9 +40,9 @@ def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
     return history
 
 
-def train_split(model_builder, x, y, *,
-                fit_params={}, cv,
-                include_tb_log=False, tqdm=None, verbose=0):
+def cross_fit(model_builder, x, y, *,
+              fit_params={}, cv,
+              include_tb_log=False, tqdm=None, verbose=0):
     if not tqdm:
         tqdm = tqdm_dummy
 
