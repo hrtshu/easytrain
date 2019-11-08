@@ -10,15 +10,17 @@ def tqdm_dummy(iterable, *args, **kwargs):
 
 
 def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
-        use_weights='best', tb_log_dir=None, callbacks=[], shuffle=True,
-        verbose=0):
+        monitor=None, use_weights='best', tb_log_dir=None, callbacks=[],
+        shuffle=True, verbose=0):
+    if monitor is None:
+        monitor = 'val_loss' if test_data else 'loss'
     if use_weights not in ('best', 'last'):
         raise ValueError("use_weights must be 'best' or 'last'")
 
     # TODO 事前にcallbacksに既にEarlyStoppingなどが含まれている場合に警告を出す
     callbacks = list(callbacks)
     if patience is not None:
-        callbacks.append(EarlyStopping(patience=patience,
+        callbacks.append(EarlyStopping(patience=patience, monitor=monitor,
                                        verbose=int(bool(verbose))))
     if use_weights == 'best':
         best_model_path = mktemp()
