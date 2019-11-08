@@ -1,7 +1,6 @@
 
 from tempfile import mktemp, mkdtemp
 
-from sklearn.model_selection import KFold
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 
 
@@ -42,14 +41,12 @@ def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
 
 
 def train_split(model_generator, x, y, *,
-                fit_params={}, n_splits=None,
+                fit_params={}, cv,
                 include_tb_log=False, tqdm=None, verbose=0):
     if not tqdm:
         tqdm = tqdm_dummy
 
-    kf = KFold(n_splits=n_splits, shuffle=True)
-
-    for train_idx, test_idx in tqdm(kf.split(x), total=kf.get_n_splits(x)):
+    for train_idx, test_idx in tqdm(cv.split(x), total=cv.get_n_splits(x)):
         train_x, train_y = x[train_idx], y[train_idx]
         test_x, test_y = x[test_idx], y[test_idx]
 
