@@ -40,7 +40,7 @@ def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
     return history
 
 
-def train_split(model_generator, x, y, *,
+def train_split(model_builder, x, y, *,
                 fit_params={}, cv,
                 include_tb_log=False, tqdm=None, verbose=0):
     if not tqdm:
@@ -50,7 +50,7 @@ def train_split(model_generator, x, y, *,
         train_x, train_y = x[train_idx], y[train_idx]
         test_x, test_y = x[test_idx], y[test_idx]
 
-        model = model_generator()
+        model = model_builder()
 
         tb_log_dir = mkdtemp() if include_tb_log else None
 
