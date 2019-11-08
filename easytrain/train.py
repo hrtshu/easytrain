@@ -14,15 +14,16 @@ def tqdm_dummy(iterable, *args, **kwargs):
     yield from iterable
 
 
-def fit(model, train_data, test_data, *, patience, max_epochs,
+def fit(model, train_data, test_data, *, patience=None, max_epochs=1,
         use_weights='best', tb_log_dir=None, callbacks=[], verbose=0):
     if use_weights not in ('best', 'last'):
         raise ValueError("use_weights must be 'best' or 'last'")
 
     # TODO 事前にcallbacksに既にEarlyStoppingなどが含まれている場合に警告を出す
     callbacks = list(callbacks)
-    callbacks.append(EarlyStopping(patience=patience,
-                                   verbose=int(bool(verbose))))
+    if patience is not None:
+        callbacks.append(EarlyStopping(patience=patience,
+                                       verbose=int(bool(verbose))))
     if use_weights == 'best':
         best_model_path = mktemp()
         callbacks.append(ModelCheckpoint(best_model_path, save_best_only=True,
