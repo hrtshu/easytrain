@@ -56,11 +56,16 @@ def cross_fit(model_builder, x, y,
     if not tqdm:
         tqdm = _tqdm_dummy
 
-    for train_idx, valid_idx in tqdm(cv.split(x), total=cv.get_n_splits(x)):
+    total = cv.get_n_splits(x)
+
+    for split, (train_idx, valid_idx) \
+            in enumerate(tqdm(cv.split(x), total=total)):
+        if verbose:
+            print('Split {}/{}'.format(split+1, total))
+            print()
+
         train_x, train_y = x[train_idx], y[train_idx]
         valid_x, valid_y = x[valid_idx], y[valid_idx]
-
-        # TODO 各分割の始めにverboseを表示する
 
         model = None
         try:
