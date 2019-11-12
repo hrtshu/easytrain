@@ -9,11 +9,11 @@ def tqdm_dummy(iterable, *args, **kwargs):
     yield from iterable
 
 
-def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
+def fit(model, train_data, valid_data=None, *, patience=None, max_epochs=1,
         monitor=None, use_weights='best', tb_log=None, callbacks=[],
         shuffle=True, verbose=0):
     if monitor is None:
-        monitor = 'val_loss' if test_data else 'loss'
+        monitor = 'val_loss' if valid_data else 'loss'
     if use_weights not in ('best', 'last'):
         raise ValueError("use_weights must be 'best' or 'last'")
 
@@ -33,7 +33,7 @@ def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
         callbacks.append(TensorBoard(log_dir=tb_log, histogram_freq=1))
 
     res_ = model.fit(*train_data, shuffle=shuffle, epochs=max_epochs,
-                     callbacks=callbacks, validation_data=test_data,
+                     callbacks=callbacks, validation_data=valid_data,
                      verbose=int(verbose))
     history = res_.history
 
@@ -53,19 +53,19 @@ def cross_fit(model_builder, x, y,
     if not tqdm:
         tqdm = tqdm_dummy
 
-    for train_idx, test_idx in tqdm(cv.split(x), total=cv.get_n_splits(x)):
+    for train_idx, valid_idx in tqdm(cv.split(x), total=cv.get_n_splits(x)):
         train_x, train_y = x[train_idx], y[train_idx]
-        test_x, test_y = x[test_idx], y[test_idx]
+        valid_x, valid_y = x[valid_idx], y[valid_idx]
 
         # TODO 各分割の始めにverboseを表示する
 
         model = None
         try:
             model = model_builder()
-            res = fit(model, (train_x, train_y), (test_x, test_y),
+            res = fit(model, (train_x, train_y), (valid_x, valid_y),
                       **fit_params, verbose=verbose)
             res['train_idx'] = train_idx
-            res['test_idx'] = test_idx
+            res['valid_idx'] = valid_idx
             yield res
         finally:
             del model
