@@ -2,6 +2,7 @@
 from tempfile import mktemp, mkdtemp
 
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
+from keras import backend as K
 
 
 def tqdm_dummy(iterable, *args, **kwargs):
@@ -58,11 +59,14 @@ def cross_fit(model_builder, x, y,
 
         # TODO 各分割の始めにverboseを表示する
 
-        model = model_builder()
-
-        res = fit(model, (train_x, train_y), (test_x, test_y),
-                  **fit_params, verbose=verbose)
-        res['train_idx'] = train_idx
-        res['test_idx'] = test_idx
-
-        yield res
+        model = None
+        try:
+            model = model_builder()
+            res = fit(model, (train_x, train_y), (test_x, test_y),
+                      **fit_params, verbose=verbose)
+            res['train_idx'] = train_idx
+            res['test_idx'] = test_idx
+            yield res
+        finally:
+            del model
+            K.clear_session()
