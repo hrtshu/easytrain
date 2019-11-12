@@ -9,7 +9,7 @@ def tqdm_dummy(iterable, *args, **kwargs):
 
 
 def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
-        monitor=None, use_weights='best', tb_log_dir=None, callbacks=[],
+        monitor=None, use_weights='best', tb_log=None, callbacks=[],
         shuffle=True, verbose=0):
     if monitor is None:
         monitor = 'val_loss' if test_data else 'loss'
@@ -26,23 +26,29 @@ def fit(model, train_data, test_data=None, *, patience=None, max_epochs=1,
         callbacks.append(ModelCheckpoint(best_model_path, save_best_only=True,
                                          save_weights_only=True,
                                          verbose=int(bool(verbose))))
-    if tb_log_dir is not None:
-        callbacks.append(TensorBoard(log_dir=tb_log_dir, histogram_freq=1))
+    if tb_log:
+        if type(tb_log) != str:
+            tb_log = mkdtemp()
+        callbacks.append(TensorBoard(log_dir=tb_log, histogram_freq=1))
 
-    res = model.fit(*train_data, shuffle=shuffle, epochs=max_epochs,
-                    callbacks=callbacks, validation_data=test_data,
-                    verbose=int(verbose))
-    history = res.history
+    res_ = model.fit(*train_data, shuffle=shuffle, epochs=max_epochs,
+                     callbacks=callbacks, validation_data=test_data,
+                     verbose=int(verbose))
+    history = res_.history
 
     if use_weights == 'best':
         model.load_weights(best_model_path)
 
-    return history
+    res = dict(model=model, history=history)
+
+    if tb_log:
+        res['tb_log_dir'] = tb_log
+
+    return res
 
 
-def cross_fit(model_builder, x, y, *,
-              fit_params={}, cv,
-              include_tb_log=False, tqdm=None, verbose=0):
+def cross_fit(model_builder, x, y,
+              *, cv, fit_params={}, tqdm=None, verbose=0):
     if not tqdm:
         tqdm = tqdm_dummy
 
@@ -50,17 +56,13 @@ def cross_fit(model_builder, x, y, *,
         train_x, train_y = x[train_idx], y[train_idx]
         test_x, test_y = x[test_idx], y[test_idx]
 
+        # TODO 各分割の始めにverboseを表示する
+
         model = model_builder()
 
-        tb_log_dir = mkdtemp() if include_tb_log else None
-
-        history = fit(model, (train_x, train_y), (test_x, test_y),
-                      **fit_params,
-                      tb_log_dir=tb_log_dir, verbose=verbose)
-
-        res = dict(model=model, history=history,
-                   train_idx=train_idx, test_idx=test_idx)
-        if include_tb_log:
-            res['tb_log_dir'] = tb_log_dir
+        res = fit(model, (train_x, train_y), (test_x, test_y),
+                  **fit_params, verbose=verbose)
+        res['train_idx'] = train_idx
+        res['test_idx'] = test_idx
 
         yield res
