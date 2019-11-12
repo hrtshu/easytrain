@@ -5,7 +5,10 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 from keras import backend as K
 
 
-def tqdm_dummy(iterable, *args, **kwargs):
+__all__ = ['fit', 'cross_fit']
+
+
+def _tqdm_dummy(iterable, *args, **kwargs):
     yield from iterable
 
 
@@ -51,7 +54,7 @@ def fit(model, train_data, valid_data=None, *, patience=None, max_epochs=1,
 def cross_fit(model_builder, x, y,
               *, cv, fit_params={}, tqdm=None, verbose=0):
     if not tqdm:
-        tqdm = tqdm_dummy
+        tqdm = _tqdm_dummy
 
     for train_idx, valid_idx in tqdm(cv.split(x), total=cv.get_n_splits(x)):
         train_x, train_y = x[train_idx], y[train_idx]
