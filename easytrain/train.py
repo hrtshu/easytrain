@@ -61,7 +61,8 @@ def cross_fit(model_builder, x, y,
     for split, (train_idx, valid_idx) \
             in enumerate(tqdm(cv.split(x), total=total)):
         if verbose:
-            print('Split {}/{}'.format(split+1, total))
+            print()
+            print('----- Split {}/{} -----'.format(split+1, total))
             print()
 
         train_x, train_y = x[train_idx], y[train_idx]
