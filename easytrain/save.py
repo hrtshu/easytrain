@@ -1,7 +1,7 @@
 
 import json
 from os.path import join, exists
-from os import mkdir
+from os import mkdir, listdir
 from shutil import move
 
 import numpy as np
@@ -25,7 +25,10 @@ class _JSONEncoderForNumpy(json.JSONEncoder):
 
 
 def save_fit_result(result, *, path):
-    if not exists(path):
+    if exists(path):
+        if listdir(path):
+            raise FileExistsError('The directory contents are not empty.')
+    else:
         mkdir(path)
 
     # save model
@@ -60,7 +63,10 @@ def fit_and_save(*args, path, **kwargs):
 
 def cross_fit_and_save(*args, path, split_name_format='split{split:02d}',
                        **kwargs):
-    if not exists(path):
+    if exists(path):
+        if listdir(path):
+            raise FileExistsError('The directory contents are not empty.')
+    else:
         mkdir(path)
 
     for split, res in enumerate(cross_fit(*args, **kwargs)):
