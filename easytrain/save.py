@@ -1,7 +1,7 @@
 
 import json
 from os.path import join, exists
-from os import mkdir, listdir
+from os import makedirs, listdir
 from shutil import move
 from itertools import count
 
@@ -37,7 +37,7 @@ def save_fit_result(result, *, path):
             raise FileExistsError('The directory contents are not empty: {}'
                                   .format(path))
     else:
-        mkdir(path)
+        makedirs(path)
 
     # save model
     model_path = join(path, 'model.h5')
@@ -105,7 +105,7 @@ def cross_fit_and_save(*args, path, split_name_format='split{split:02d}',
             raise FileExistsError('The directory contents are not empty: {}'
                                   .format(path))
     else:
-        mkdir(path)
+        makedirs(path)
 
     for split, res in enumerate(cross_fit(*args, **kwargs)):
         split_path = join(path, split_name_format.format(split=split))
