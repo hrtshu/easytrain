@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 metadata = {
     'name': 'easytrain',
     'packages': find_packages(),
-    'version': '0.2.0',
+    'version': '0.2.1',
     'description': 'machine learning utility for lazy man',
     'python_requires': '>=3.5',
     'author': 'Shuhei Hirata',
