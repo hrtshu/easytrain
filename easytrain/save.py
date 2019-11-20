@@ -27,7 +27,8 @@ class _JSONEncoderForNumpy(json.JSONEncoder):
 def save_fit_result(result, *, path):
     if exists(path):
         if listdir(path):
-            raise FileExistsError('The directory contents are not empty.')
+            raise FileExistsError('The directory contents are not empty: {}'
+                                  .format(path))
     else:
         mkdir(path)
 
@@ -65,7 +66,8 @@ def cross_fit_and_save(*args, path, split_name_format='split{split:02d}',
                        **kwargs):
     if exists(path):
         if listdir(path):
-            raise FileExistsError('The directory contents are not empty.')
+            raise FileExistsError('The directory contents are not empty: {}'
+                                  .format(path))
     else:
         mkdir(path)
 
