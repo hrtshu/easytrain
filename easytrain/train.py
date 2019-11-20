@@ -1,5 +1,6 @@
 
 from tempfile import mktemp, mkdtemp
+from datetime import datetime
 
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 from keras import backend as K
@@ -35,15 +36,17 @@ def fit(model, train_data, valid_data=None, *, patience=None, max_epochs=1,
             tb_log = mkdtemp()
         callbacks.append(TensorBoard(log_dir=tb_log, histogram_freq=1))
 
+    time = datetime.now()
     res_ = model.fit(*train_data, shuffle=shuffle, epochs=max_epochs,
                      callbacks=callbacks, validation_data=valid_data,
                      verbose=int(verbose))
+    time = datetime.now() - time
     history = res_.history
 
     if use_weights == 'best':
         model.load_weights(best_model_path)
 
-    res = dict(model=model, history=history)
+    res = dict(model=model, history=history, time=time)
 
     if tb_log:
         res['tb_log_dir'] = tb_log

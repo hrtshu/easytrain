@@ -48,6 +48,11 @@ def save_fit_result(result, *, path):
     with open(history_path, 'x') as f:
         json.dump(result['history'], f, cls=_JSONEncoderForNumpy, indent=4)
 
+    # save time
+    time_path = join(path, 'time.txt')
+    with open(time_path, 'x') as f:
+        print(result['time'], file=f)
+
     # save tb_log
     if 'tb_log_dir' in result:
         tb_log_path = join(path, 'tb_log')
@@ -76,6 +81,9 @@ def load_fit_result(path, *, load_model=False, load_idx=False):
     history_path = join(path, 'history.json')
     with open(history_path) as f:
         result['history'] = json.load(f)  # TODO clsオプションにデコーダを指定する
+
+    # load time
+    # TODO
 
     # load tb_log
     # TODO
