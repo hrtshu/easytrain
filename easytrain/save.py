@@ -103,7 +103,7 @@ def load_fit_result(path, *, load_model=False, load_idx=False):
 
 def fit_and_save(*args, path, **kwargs):
     res = fit(*args, **kwargs)
-    save_fit_result(res, path)
+    save_fit_result(res, path=path)
 
 
 def cross_fit_and_save(*args, path, split_name_format='split{split:02d}',
