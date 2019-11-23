@@ -31,7 +31,7 @@ class _JSONEncoderForNumpy(json.JSONEncoder):
             return super(_JSONEncoderForNumpy, self).default(obj)
 
 
-def save_fit_result(result, *, path):
+def save_fit_result(result, *, path, save_model_summary=False):
     if exists(path):
         if listdir(path):
             raise FileExistsError('The directory contents are not empty: {}'
@@ -42,6 +42,12 @@ def save_fit_result(result, *, path):
     # save model
     model_path = join(path, 'model.h5')
     result['model'].save(model_path, overwrite=False)
+
+    # save model summary
+    if save_model_summary:
+        model_summary_path = join(path, 'model_summary.txt')
+        with open(model_summary_path, 'x') as f:
+            result['model'].summary(print_fn=lambda x: print(x, file=f))
 
     # save history
     history_path = join(path, 'history.json')
@@ -101,13 +107,13 @@ def load_fit_result(path, *, load_model=False, load_idx=False):
     return result
 
 
-def fit_and_save(*args, path, **kwargs):
+def fit_and_save(*args, path, save_model_summary=False, **kwargs):
     res = fit(*args, **kwargs)
-    save_fit_result(res, path=path)
+    save_fit_result(res, path=path, save_model_summary=save_model_summary)
 
 
 def cross_fit_and_save(*args, path, split_name_format='split{split:02d}',
-                       **kwargs):
+                       save_model_summary=False, **kwargs):
     if exists(path):
         if listdir(path):
             raise FileExistsError('The directory contents are not empty: {}'
@@ -117,7 +123,8 @@ def cross_fit_and_save(*args, path, split_name_format='split{split:02d}',
 
     for split, res in enumerate(cross_fit(*args, **kwargs)):
         split_path = join(path, split_name_format.format(split=split))
-        save_fit_result(res, path=split_path)
+        save_fit_result(res, path=split_path,
+                        save_model_summary=save_model_summary)
 
 
 def load_cross_fit_result(path, *, split_name_format='split{split:02d}',
