@@ -118,8 +118,6 @@ def cross_fit_and_save(*args, path, split_name_format='split{split:02d}',
         if listdir(path):
             raise FileExistsError('The directory contents are not empty: {}'
                                   .format(path))
-    else:
-        makedirs(path)
 
     for split, res in enumerate(cross_fit(*args, **kwargs)):
         split_path = join(path, split_name_format.format(split=split))
