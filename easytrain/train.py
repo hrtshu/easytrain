@@ -55,14 +55,14 @@ def fit(model, train_data, valid_data=None, *, patience=None, max_epochs=1,
 
 
 def cross_fit(model_builder, x, y,
-              *, cv, fit_params={}, tqdm=None, verbose=0):
+              *, cv, groups=None, fit_params={}, tqdm=None, verbose=0):
     if not tqdm:
         tqdm = _tqdm_dummy
 
     total = cv.get_n_splits(x)
 
     for split, (train_idx, valid_idx) \
-            in enumerate(tqdm(cv.split(x), total=total)):
+            in enumerate(tqdm(cv.split(x, groups=groups), total=total)):
         if verbose:
             print()
             print('----- Split {}/{} -----'.format(split+1, total))
