@@ -28,7 +28,8 @@ def fit(model, train_data, valid_data=None, *, patience=None, max_epochs=1,
                                        verbose=int(bool(verbose))))
     if use_weights == 'best':
         best_model_path = mktemp()
-        callbacks.append(ModelCheckpoint(best_model_path, save_best_only=True,
+        callbacks.append(ModelCheckpoint(best_model_path, monitor=monitor,
+                                         save_best_only=True,
                                          save_weights_only=True,
                                          verbose=int(bool(verbose))))
     if tb_log:
